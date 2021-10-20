@@ -8,9 +8,16 @@ const sharp = require('sharp')
 const FileType = require('file-type')
 const gify = require('gify')
 const fs = require('fs')
+const path = require('path')
 const gifResize = require('@gumlet/gif-resize')
 const mongoose = require('mongoose')
 const NFTITEM = mongoose.model('NFTITEM')
+
+const getThumbnailPath = () => {
+  const ROOT_PATH = path.resolve(path.join(__dirname, '../'));
+  
+  return path.resolve(path.join(ROOT_PATH, process.env.THUMBNAIL_PATH));
+}
 
 const generateFileName = () => {
   let fileName = new Date().getTime().toString()
@@ -21,7 +28,7 @@ const uploadImageToInstance = async (body, extension, nftItem) => {
   let fileName = generateFileName()
   let key = `${fileName}.${extension}`
   try {
-    await fs.writeFileSync(`thumb-image/${key}`, body)
+    await fs.writeFileSync(`${getThumbnailPath()}/${key}`, body)
     nftItem.thumbnailPath = key
     await nftItem.save()
   } catch (error) {
@@ -185,7 +192,7 @@ const getThumbnailImageFromURL = async (imgPath) => {
         width: 200
       };
       let fileName = generateFileName()
-      let key = `thumb-image/${fileName}.gif`
+      let key = `${getThumbnailPath()}/${fileName}.gif`
       try {
         gify(imgPath, key, opts, function(err){
           if (err) throw err;
@@ -258,7 +265,7 @@ const compressNFTImage = async () => {
                 }
                 if (body) {
                   let fileName = generateFileName()
-                  let key = `thumb-image/${fileName}.gif`
+                  let key = `${getThumbnailPath()}/${fileName}.gif`
                   try {
                     const gifRes = await gifResize({
                       width: 200
